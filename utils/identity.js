@@ -1,6 +1,8 @@
 import { Core } from '@self.id/core'
 const SID = require('@self.id/web')
-const { EthereumAuthProvider, SelfID, WebClient } = SID
+const { CosmosAuthProvider, OraiAuthProvider, SelfID, WebClient } = SID
+
+const chainId = "Oraichain-testnet";
 
 async function webClient({
   ceramicNetwork = 'testnet-clay',
@@ -9,10 +11,10 @@ async function webClient({
   provider = null,
   client = null
 } = {}) {
-  let ethereum = window.ethereum;
+  let keplr = await window.keplr.enable(chainId);
 
-  if (!ethereum) return {
-    error: "No ethereum wallet detected"
+  if (!window.keplr) return {
+    error: "No keplr wallet detected"
   }
 
   if (!client) {
@@ -23,11 +25,12 @@ async function webClient({
   }
 
   if (!address) {
-    [address] = await ethereum.request({ method: 'eth_requestAccounts' })
+    const offlineSigner = window.keplr.getOfflineSigner(chainId);
+    [address] = await offlineSigner.getAccounts();
   }
 
   if (!provider) {
-    provider = new EthereumAuthProvider(window.ethereum, address)
+    provider = new CosmosAuthProvider(window.keplr, address, chainId);
   }
 
   await client.authenticate(provider)
@@ -50,7 +53,7 @@ const networks = {
 const caip10Links = {
   ethereum: "@eip155:1",
   bitcoin: '@bip122:000000000019d6689c085ae165831e93',
-  cosmos: '@cosmos:cosmoshub-3',
+  cosmos: '@cosmos:Oraichain-testnet',
   kusama: '@polkadot:b0a8d493285c2df73290dfb7e61f870f'
 }
 
@@ -59,16 +62,16 @@ CAIP-10 Account IDs is a blockchain agnostic way to describe an account on any b
 */
 async function getRecord({
   ceramicNetwork = 'testnet-clay',
-  network = 'ethereum',
+  network = 'Oraichain-testnet',
   client = null,
   schema = 'basicProfile',
   address = null
 } = {}) {
-  let ethereum = window.ethereum;
+  let keplr = await window.keplr.enable(chainId);
   let record;
 
-  if (!ethereum) return {
-    error: "No ethereum wallet detected"
+  if (!window.keplr) return {
+    error: "No keplr wallet detected"
   }
 
   if (!client) {
@@ -76,11 +79,11 @@ async function getRecord({
   }
 
   if (!address) {
-   [address] = await ethereum.request({ method: 'eth_requestAccounts' })
+    [address] = await keplr.request({ method: 'eth_requestAccounts' })
   }
   const capLink = caip10Links[network]
   const did = await client.getAccountDID(`${address}${capLink}`)
-  
+
   record = await client.get(schema, did)
   console.log('record: ', record)
   return {
