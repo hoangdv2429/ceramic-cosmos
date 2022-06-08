@@ -101,9 +101,7 @@
 import { CeramicClient } from '@ceramicnetwork/http-client'
 import { DID } from 'dids'
 import { getResolver as getKeyResolver } from 'key-did-resolver'
-import { getResolver as get3IDResolver } from '@ceramicnetwork/3id-did-resolver'
-import { Secp256k1Provider } from 'key-did-provider-secp256k1'
-import { ThreeIdProvider } from '@3id/did-provider'
+import { Ed25519Provider } from 'key-did-provider-ed25519'
 
 async function resolveDID() {
   const did = new DID({ resolver: getKeyResolver() })
@@ -112,81 +110,55 @@ async function resolveDID() {
 
 // `seed` must be a 32-byte long Uint8Array
 async function authenticateDID(seed) {
-  const provider = new Secp256k1Provider(seed)
+  const provider = new Ed25519Provider(seed)
   const did = new DID({ provider, resolver: getKeyResolver() })
-  await did.authenticate()
+  await did.authenticate();
   return did
 }
 
-// function getPermission(request) {
-//   return Promise.resolve(request.payload.paths)
-// }
+const chainId = "cosmoshub-4";
 
-// `seed` must be a 32-byte long Uint8Array
-async function authenticateWithSecret(seed) {
-  const ceramic = new CeramicClient()
+async function webClient({
+  ceramicNetwork = 'testnet-clay',
+  connectNetwork = 'testnet-clay',
+  address = '',
+  provider = null,
+  client = null
+} = {}) {
+  let keplr = await window.keplr.enable(chainId);
 
-  const threeID = await ThreeIdProvider.create({
-    seed,
-    // See the section above about permissions management
-    getPermission: (request) => Promise.resolve(request.payload.paths),
-  })
+  if (!window.keplr) return {
+    error: "No keplr wallet detected"
+  }
 
-  const did = new DID({
-    provider: threeID.getDidProvider(),
-    resolver: {
-      ...get3IDResolver(ceramic),
-      ...getKeyResolver(),
-    },
-  })
+  if (!address) {
+    const offlineSigner = window.keplr.getOfflineSigner(chainId);
+    [address] = await offlineSigner.getAccounts();
+  }
 
-  // Authenticate the DID using the 3ID provider
-  await did.authenticate()
 
-  // The Ceramic client can create and update streams using the authenticated DID
-  ceramic.did = did
+  if (!client) {
+    client = new webClient({
+      ceramic: ceramicNetwork,
+      connectNetwork
+    })
+  }
+
+  if (!provider) {
+    const provider = new Ed25519Provider(Uint8Array.from(address));
+    const did = new DID({ provider, resolver: getKeyResolver() });
+    await did.authenticate();
+  }
+
+  // await client.authenticate(provider)
+
+  //   const selfId = new SelfID({ client })
+  //   const id = selfId.did._id
+
+  return {
+    client, id, selfId, error: null
+  }
 }
-
-// const chainId = "cosmoshub-4";
-
-// async function webClient({
-//   ceramicNetwork = 'testnet-clay',
-//   connectNetwork = 'testnet-clay',
-//   address = '',
-//   provider = null,
-//   client = null
-// } = {}) {
-//   let keplr = await window.keplr.enable(chainId);
-
-//   if (!window.keplr) return {
-//     error: "No keplr wallet detected"
-//   }
-
-//   if (!client) {
-//     client = new WebClient({
-//       ceramic: ceramicNetwork,
-//       connectNetwork
-//     })
-//   }
-
-//   if (!address) {
-//     const offlineSigner = window.keplr.getOfflineSigner(chainId);
-//     [address] = await offlineSigner.getAccounts();
-//   }
-
-//   if (!provider) {
-//     provider = new CosmosAuthProvider(keplr, address[0], chainId)
-//   }
-
-//   await client.authenticate(provider)
-
-//   const selfId = new SelfID({ client })
-//   const id = selfId.did._id
-
-//   return {
-//     client, id, selfId, error: null
-//   }
-// }
 
 const networks = {
   ethereum: 'ethereum',
@@ -207,7 +179,7 @@ CAIP-10 Account IDs is a blockchain agnostic way to describe an account on any b
 */
 async function getRecord({
   ceramicNetwork = 'testnet-clay',
-  network = 'cosmoshub-4',
+  network = 'cosmos',
   client = null,
   schema = 'basicProfile',
   address = null
