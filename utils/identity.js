@@ -1,8 +1,9 @@
 import { Core } from '@self.id/core'
 const SID = require('@self.id/web')
-const { CosmosAuthProvider, OraiAuthProvider, SelfID, WebClient } = SID
+const { OraiAuthProvider, SelfID, WebClient } = SID
+import { CosmosAuthProvider } from '@3id/connect';
 
-const chainId = "Oraichain-testnet";
+const chainId = "cosmoshub-4";
 
 async function webClient({
   ceramicNetwork = 'testnet-clay',
@@ -30,7 +31,7 @@ async function webClient({
   }
 
   if (!provider) {
-    provider = new CosmosAuthProvider(window.keplr, address, chainId);
+    provider = new CosmosAuthProvider(window.keplr, address[0], chainId);
   }
 
   await client.authenticate(provider)
@@ -79,8 +80,10 @@ async function getRecord({
   }
 
   if (!address) {
-    [address] = await keplr.request({ method: 'eth_requestAccounts' })
+    const offlineSigner = window.keplr.getOfflineSigner(chainId);
+    [address] = await offlineSigner.getAccounts();
   }
+
   const capLink = caip10Links[network]
   const did = await client.getAccountDID(`${address}${capLink}`)
 
