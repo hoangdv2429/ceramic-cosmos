@@ -9,10 +9,14 @@
   },
   "dependencies": {
     "@3id/connect": "^0.2.5",
-    "@ceramicnetwork/http-client": "^1.5.2",
+    "@3id/did-provider": "^0.4.1",
+    "@ceramicnetwork/http-client": "^1.5.7",
+    "@ceramicstudio/idx": "^0.12.2",
     "@self.id/core": "^0.2.0",
     "@self.id/web": "^0.2.0",
+    "@tendermint/sig": "^0.6.0",
     "3id-did-provider": "^1.1.1",
+    "key-did-provider-secp256k1": "^1.0.1",
     "next": "10.2.3",
     "react": "17.0.2",
     "react-dom": "17.0.2"
