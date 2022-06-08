@@ -1,6 +1,6 @@
 import { Core } from '@self.id/core'
 const SID = require('@self.id/web')
-const { CosmosAuthProvider, OraiAuthProvider, SelfID, WebClient } = SID
+const { EthereumAuthProvider, CosmosAuthProvider, SelfID, WebClient } = SID
 
 const chainId = "cosmoshub-4";
 
@@ -30,7 +30,8 @@ async function webClient({
   }
 
   if (!provider) {
-    provider = new CosmosAuthProvider(keplr, address[0], chainId);
+    provider = new CosmosAuthProvider(keplr, address[0], chainId)
+    // console.log();
   }
 
   await client.authenticate(provider)
@@ -53,7 +54,7 @@ const networks = {
 const caip10Links = {
   ethereum: "@eip155:1",
   bitcoin: '@bip122:000000000019d6689c085ae165831e93',
-  cosmos: '@cosmos:Oraichain-testnet',
+  cosmos: '@cosmos:cosmoshub-4',
   kusama: '@polkadot:b0a8d493285c2df73290dfb7e61f870f'
 }
 
@@ -62,7 +63,7 @@ CAIP-10 Account IDs is a blockchain agnostic way to describe an account on any b
 */
 async function getRecord({
   ceramicNetwork = 'testnet-clay',
-  network = 'Oraichain-testnet',
+  network = 'cosmoshub-4',
   client = null,
   schema = 'basicProfile',
   address = null

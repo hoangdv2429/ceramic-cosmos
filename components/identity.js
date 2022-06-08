@@ -1,7 +1,7 @@
 import CeramicClient from '@ceramicnetwork/http-client'
 import ThreeIdResolver from '@ceramicnetwork/3id-did-resolver'
 import { IDX } from '@ceramicstudio/idx'
-import { EthereumAuthProvider, ThreeIdConnect } from '@3id/connect'
+import { CosmosAuthProvider, EthereumAuthProvider, ThreeIdConnect } from '@3id/connect'
 import { DID } from 'dids'
 
 const ceramicProvider = CeramicClient.default ? CeramicClient.default : CeramicClient;
@@ -15,10 +15,10 @@ async function client({
   ceramicClient = null
 } = {}) {
   let ceramic;
-  let ethereum = window.ethereum;
+  let keplr = await window.keplr.enable(chainId);
 
-  if (!ethereum) return {
-    error: "No ethereum wallet detected"
+  if (!window.keplr) return {
+    error: "No Keplr wallet detected"
   }
 
   if (!ceramicClient) {
@@ -50,14 +50,15 @@ async function client({
   }
 
   if (!address) {
-    const addresses = await ethereum.request({ method: 'eth_requestAccounts' })
-    address = addresses[0]
+    const offlineSigner = window.keplr.getOfflineSigner(chainId);
+    [address] = await offlineSigner.getAccounts();
+    address = address[0];
   }
 
   const threeIdConnect = new ThreeIdConnect()
 
   if (!provider) {
-    provider = new EthereumAuthProvider(ethereum, address)
+    provider = new CosmosAuthProvider(keplr, address, chainId)
   }
 
   await threeIdConnect.connect(provider)
@@ -67,7 +68,7 @@ async function client({
     resolver: resolvers
   })
 
-  ceramic.setDID(did) 
+  ceramic.setDID(did)
   await ceramic.did.authenticate()
   const idx = new IDX({ ceramic })
 
@@ -81,9 +82,9 @@ async function readOnlyClient({
   ceramicClient = null,
 } = {}) {
   let ceramic;
-  let ethereum = window.ethereum;
+  let keplr = await window.keplr.enable(chainId);
 
-  if (!ethereum) return {
+  if (!window.keplr) return {
     error: "No ethereum wallet detected"
   }
 
@@ -109,7 +110,7 @@ const networks = {
 const caip10Links = {
   ethereum: "@eip155:1",
   bitcoin: '@bip122:000000000019d6689c085ae165831e93',
-  cosmos: '@cosmos:cosmoshub-3',
+  cosmos: '@cosmos:cosmoshub-4',
   kusama: '@polkadot:b0a8d493285c2df73290dfb7e61f870f'
 }
 
@@ -118,16 +119,16 @@ CAIP-10 Account IDs is a blockchain agnostic way to describe an account on any b
 */
 async function getRecord({
   endpoint = "https://ceramic-clay.3boxlabs.com",
-  network = 'ethereum',
+  network = 'cosmos',
   ceramicClient = null,
   schema = 'basicProfile'
 } = {}) {
   let ceramic;
-  let ethereum = window.ethereum;
+  let keplr = await window.keplr.enable(chainId);
   let record;
 
-  if (!ethereum) return {
-    error: "No ethereum wallet detected"
+  if (!window.keplr) return {
+    error: "No keplr wallet detected"
   }
 
   if (!ceramicClient) {
@@ -136,11 +137,12 @@ async function getRecord({
     ceramic = ceramicClient
   }
 
-  if (network === networks.ethereum) {
-    const addresses = await ethereum.request({ method: 'eth_requestAccounts' })
+  if (network === networks.cosmos) {
+    const offlineSigner = window.keplr.getOfflineSigner(chainId);
+    const addresses = await offlineSigner.getAccounts();
     const address = addresses[0]
     const idx = new IDX({ ceramic })
-    const data = await idx.get(schema, `${address}${caip10Links.ethereum}`)
+    const data = await idx.get(schema, `${address}${caip10Links.cosmos}`)
     record = data
   }
   return {
