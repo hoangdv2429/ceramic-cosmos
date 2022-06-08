@@ -1,7 +1,6 @@
 import { Core } from '@self.id/core'
 const SID = require('@self.id/web')
-const { OraiAuthProvider, SelfID, WebClient } = SID
-import { CosmosAuthProvider } from '@3id/connect';
+const { CosmosAuthProvider, OraiAuthProvider, SelfID, WebClient } = SID
 
 const chainId = "cosmoshub-4";
 
@@ -31,7 +30,7 @@ async function webClient({
   }
 
   if (!provider) {
-    provider = new CosmosAuthProvider(window.keplr, address[0], chainId);
+    provider = new CosmosAuthProvider(keplr, address[0], chainId);
   }
 
   await client.authenticate(provider)
