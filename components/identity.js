@@ -1,3 +1,6 @@
+
+
+
 import CeramicClient from '@ceramicnetwork/http-client'
 import ThreeIdResolver from '@ceramicnetwork/3id-did-resolver'
 import { IDX } from '@ceramicstudio/idx'
@@ -7,7 +10,7 @@ import { DID } from 'dids'
 const ceramicProvider = CeramicClient.default ? CeramicClient.default : CeramicClient;
 const threeIdProvider = ThreeIdResolver.default ? ThreeIdResolver.default : ThreeIdResolver;
 
-async function client({
+async function webClient({
   endpoint = "https://ceramic-clay.3boxlabs.com",
   resolvers = null,
   address = '',
@@ -67,7 +70,7 @@ async function client({
     resolver: resolvers
   })
 
-  ceramic.setDID(did) 
+  ceramic.setDID(did)
   await ceramic.did.authenticate()
   const idx = new IDX({ ceramic })
 
@@ -151,5 +154,5 @@ async function getRecord({
 export {
   getRecord,
   readOnlyClient,
-  client
+  webClient
 }

@@ -76,11 +76,11 @@ async function getRecord({
   }
 
   if (!address) {
-   [address] = await ethereum.request({ method: 'eth_requestAccounts' })
+    [address] = await ethereum.request({ method: 'eth_requestAccounts' })
   }
   const capLink = caip10Links[network]
   const did = await client.getAccountDID(`${address}${capLink}`)
-  
+
   record = await client.get(schema, did)
   console.log('record: ', record)
   return {
