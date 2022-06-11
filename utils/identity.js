@@ -52,7 +52,7 @@ async function getRecord({
   }
 
   const capLink = caip10Links[network]
-  const did = await client.getAccountDID(`${address}${capLink}`)
+  const did = await client.getAccountDID(`${address[0]}${capLink}`)
 
   record = await client.get(schema, did)
   console.log('record: ', record)
@@ -72,12 +72,14 @@ async function authenticateWithCosmos(keplrWallet) {
 
   await keplrWallet.enable(chainId)
   const offlineSigner = keplrWallet.getOfflineSigner(chainId);
+
   const accounts = await offlineSigner.getAccounts();
 
   console.log("Offline signer: ", offlineSigner);
   console.log("account: ", accounts);
 
-  const authProvider = new CosmosAuthProvider(offlineSigner, accounts[0].address, chainId);
+  let authProvider = new CosmosAuthProvider(offlineSigner, accounts[0].address, chainId);
+
   console.log(authProvider)
   console.log("1:", chainId)
   await threeID.connect(authProvider);

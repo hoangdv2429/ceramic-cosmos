@@ -11,7 +11,9 @@
     "@3id/connect": "^0.2.5",
     "@3id/did-provider": "^0.4.1",
     "@babel/polyfill": "^7.12.1",
+    "@ceramicnetwork/blockchain-utils-validation": "^2.0.4",
     "@ceramicnetwork/http-client": "^1.5.7",
+    "@ceramicnetwork/stream-caip10-link-handler": "^2.0.4",
     "@ceramicstudio/idx": "^0.12.2",
     "@self.id/core": "^0.2.0",
     "@self.id/web": "^0.2.0",
@@ -30,8 +32,11 @@
     "tailwindcss": "^2.1.4"
   },
   "plugins": [
-    ["@babel/plugin-transform-modules-commonjs", {
-      "allowTopLevelThis": true
-    }]
+    [
+      "@babel/plugin-transform-modules-commonjs",
+      {
+        "allowTopLevelThis": true
+      }
+    ]
   ]
 }
