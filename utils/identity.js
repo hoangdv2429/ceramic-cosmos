@@ -3,7 +3,7 @@ import { CeramicClient } from '@ceramicnetwork/http-client'
 import { DID } from 'dids'
 import { getResolver as getKeyResolver } from 'key-did-resolver'
 import { getResolver as get3IDResolver } from '@ceramicnetwork/3id-did-resolver'
-import { OraiAuthProvider } from '@ceramicnetwork/blockchain-utils-linking'
+import { CosmosAuthProvider } from '@ceramicnetwork/blockchain-utils-linking'
 
 
 const ceramic = new CeramicClient("https://ceramic-clay.3boxlabs.com")
@@ -77,7 +77,7 @@ async function authenticateWithCosmos(keplrWallet) {
   console.log("Offline signer: ", offlineSigner);
   console.log("account: ", accounts);
 
-  const authProvider = new OraiAuthProvider(offlineSigner, accounts[0].address, chainId);
+  const authProvider = new CosmosAuthProvider(offlineSigner, accounts[0].address, chainId);
   console.log(authProvider)
   console.log("1:", chainId)
   await threeID.connect(authProvider);
