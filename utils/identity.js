@@ -1,164 +1,12 @@
-// import { Core } from '@self.id/core'
-// const SID = require('@self.id/web')
-// const { EthereumAuthProvider, CosmosAuthProvider, SelfID, WebClient } = SID
-
-// const chainId = "cosmoshub-4";
-
-// async function webClient({
-//   ceramicNetwork = 'testnet-clay',
-//   connectNetwork = 'testnet-clay',
-//   address = '',
-//   provider = null,
-//   client = null
-// } = {}) {
-//   let keplr = await window.keplr.enable(chainId);
-
-//   if (!window.keplr) return {
-//     error: "No keplr wallet detected"
-//   }
-
-//   if (!client) {
-//     client = new WebClient({
-//       ceramic: ceramicNetwork,
-//       connectNetwork
-//     })
-//   }
-
-//   if (!address) {
-//     const offlineSigner = window.keplr.getOfflineSigner(chainId);
-//     [address] = await offlineSigner.getAccounts();
-//   }
-
-//   if (!provider) {
-//     provider = new CosmosAuthProvider(keplr, address[0], chainId)
-//   }
-
-//   await client.authenticate(provider)
-
-//   const selfId = new SelfID({ client })
-//   const id = selfId.did._id
-
-//   return {
-//     client, id, selfId, error: null
-//   }
-// }
-
-// const networks = {
-//   ethereum: 'ethereum',
-//   bitcoin: 'bitcoin',
-//   cosmos: 'cosmos',
-//   kusama: 'kusama'
-// }
-
-// const caip10Links = {
-//   ethereum: "@eip155:1",
-//   bitcoin: '@bip122:000000000019d6689c085ae165831e93',
-//   cosmos: '@cosmos:cosmoshub-4',
-//   kusama: '@polkadot:b0a8d493285c2df73290dfb7e61f870f'
-// }
-
-// /*
-// CAIP-10 Account IDs is a blockchain agnostic way to describe an account on any blockchain. This may be an externally owned key-pair account, or a smart contract account. Ceramic uses CAIP-10s as a way to lookup the DID of a user using a caip10-link streamType in Ceramic. Learn more in the Ceramic documentation.
-// */
-// async function getRecord({
-//   ceramicNetwork = 'testnet-clay',
-//   network = 'cosmoshub-4',
-//   client = null,
-//   schema = 'basicProfile',
-//   address = null
-// } = {}) {
-//   let keplr = await window.keplr.enable(chainId);
-//   let record;
-
-//   if (!window.keplr) return {
-//     error: "No keplr wallet detected"
-//   }
-
-//   if (!client) {
-//     client = new Core({ ceramic: ceramicNetwork })
-//   }
-
-//   if (!address) {
-//     const offlineSigner = window.keplr.getOfflineSigner(chainId);
-//     [address] = await offlineSigner.getAccounts();
-//   }
-
-//   const capLink = caip10Links[network]
-//   const did = await client.getAccountDID(`${address}${capLink}`)
-
-//   record = await client.get(schema, did)
-//   console.log('record: ', record)
-//   return {
-//     record, error: null
-//   }
-// }
-
-// export {
-//   webClient,
-//   getRecord
-// }
-
+import { ThreeIdConnect } from '@3id/connect'
 import { CeramicClient } from '@ceramicnetwork/http-client'
 import { DID } from 'dids'
 import { getResolver as getKeyResolver } from 'key-did-resolver'
-import { Ed25519Provider } from 'key-did-provider-ed25519'
-
-async function resolveDID() {
-  const did = new DID({ resolver: getKeyResolver() })
-  return await did.resolve('did:key:...')
-}
-
-// `seed` must be a 32-byte long Uint8Array
-async function authenticateDID(seed) {
-  const provider = new Ed25519Provider(seed)
-  const did = new DID({ provider, resolver: getKeyResolver() })
-  await did.authenticate();
-  return did
-}
-
-const chainId = "cosmoshub-4";
-
-async function webClient({
-  ceramicNetwork = 'testnet-clay',
-  connectNetwork = 'testnet-clay',
-  address = '',
-  provider = null,
-  client = null
-} = {}) {
-  let keplr = await window.keplr.enable(chainId);
-
-  if (!window.keplr) return {
-    error: "No keplr wallet detected"
-  }
-
-  if (!address) {
-    const offlineSigner = window.keplr.getOfflineSigner(chainId);
-    [address] = await offlineSigner.getAccounts();
-  }
+import { getResolver as get3IDResolver } from '@ceramicnetwork/3id-did-resolver'
+import { OraiAuthProvider } from '@ceramicnetwork/blockchain-utils-linking'
 
 
-  if (!client) {
-    client = new webClient({
-      ceramic: ceramicNetwork,
-      connectNetwork
-    })
-  }
-
-  if (!provider) {
-    const provider = new Ed25519Provider(Uint8Array.from(address));
-    const did = new DID({ provider, resolver: getKeyResolver() });
-    await did.authenticate();
-  }
-
-  // await client.authenticate(provider)
-
-  //   const selfId = new SelfID({ client })
-  //   const id = selfId.did._id
-
-  return {
-    client, id, selfId, error: null
-  }
-}
+const ceramic = new CeramicClient("https://ceramic-clay.3boxlabs.com")
 
 const networks = {
   ethereum: 'ethereum',
@@ -170,7 +18,7 @@ const networks = {
 const caip10Links = {
   ethereum: "@eip155:1",
   bitcoin: '@bip122:000000000019d6689c085ae165831e93',
-  cosmos: '@cosmos:cosmoshub-4',
+  cosmos: '@cosmos:Oraichain-testnet',
   kusama: '@polkadot:b0a8d493285c2df73290dfb7e61f870f'
 }
 
@@ -184,12 +32,15 @@ async function getRecord({
   schema = 'basicProfile',
   address = null
 } = {}) {
-  let keplr = await window.keplr.enable(chainId);
-  let record;
+
+  const chainId = 'Oraichain-testnet';
 
   if (!window.keplr) return {
     error: "No keplr wallet detected"
   }
+
+  await window.keplr.enable(chainId);
+  let record;
 
   if (!client) {
     client = new Core({ ceramic: ceramicNetwork })
@@ -210,7 +61,55 @@ async function getRecord({
   }
 }
 
+// --------------
+
+
+async function authenticateWithCosmos(keplrWallet) {
+
+  const threeID = new ThreeIdConnect()
+
+  const chainId = 'Oraichain-testnet';
+
+  await keplrWallet.enable(chainId)
+  const offlineSigner = keplrWallet.getOfflineSigner(chainId);
+  const accounts = await offlineSigner.getAccounts();
+
+  console.log("Offline signer: ", offlineSigner);
+  console.log("account: ", accounts);
+
+  const authProvider = new OraiAuthProvider(offlineSigner, accounts[0].address, chainId);
+  console.log(authProvider)
+  console.log("1:", chainId)
+  await threeID.connect(authProvider);
+  console.log("2")
+  const did = new DID({
+    provider: threeID.getDidProvider(),
+    resolver: {
+      ...get3IDResolver(ceramic),
+      ...getKeyResolver()
+    }
+  })
+  console.log("3:", did)
+  await did.authenticate()
+
+  console.log("4")
+  ceramic.did = did
+
+  console.log(ceramic);
+  // return {
+
+  // }
+}
+
+async function webClient() {
+  if (window.keplr == undefined) {
+    throw new Error('No injected Cosmos provider')
+  }
+  await authenticateWithCosmos(window.keplr)
+}
+
 export {
   webClient,
   getRecord
 }
+
